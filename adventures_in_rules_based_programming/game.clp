@@ -178,4 +178,39 @@
     =>
     (modify ?c (count (+ ?count 1)))
     (modify ?counter (count (+ ?count 1))))
-    
+
+;; Eating Mushroom
+(defrule eat_mushroom_first
+    ?c <- (command (action eat mushroom) (count 1))
+    (thing  (id adventurer)
+            (location pit_north))
+    =>
+    (retract ?c)
+    (println "You probably shouldn't do that.")
+    (println "It might be poisonous."))
+
+(defrule eat_mushroom_second
+    ?c <- (command (action eat mushroom) (count 2))
+    (thing  (id adventurer)
+            (location pit_north))
+    =>
+    (retract ?c)
+    (println "Seriously? You have no idea what could happen!"))
+
+(defrule eat_mushroom_third
+    ?c <- (command (action eat mushroom) (count 3))
+    (thing  (id adventurer)
+            (location pit_north))
+    =>
+    (retract ?c)
+    (println "Ok, you pull a piece off and put it into your mouth.")
+    (println "Your head spins around and with a mighty step,")
+    (println "you leap out of the pit.")
+    (halt))
+
+(defrule eat_anything
+    ?c <- (command (action eat ?) )
+    (thing  (id adventurer))
+    =>
+    (retract ?c)
+    (println "Think about escaping, not lunch!"))
