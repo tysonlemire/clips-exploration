@@ -4,9 +4,8 @@
     (slot location))
 
 (deftemplate command
-    (multislot action)
-    (slot count))
+    (multislot action))
 
-(deftemplate command_counter
-    (multislot action)
+(deftemplate counter
+    (multislot id)
     (slot count))

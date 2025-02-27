@@ -163,54 +163,44 @@
     (println "You can't return to the")
     (println "safety of your home that easily."))
 
-(defrule new_action
-    (declare (salience 5))
-    ?c <- (command (action $?action) (count nil))
-    (not (command_counter (action $?action)))
-    =>
-    (modify ?c (count 1))
-    (assert (command_counter (action ?action) (count 1))))
-
-(defrule existing_action
-    (declare (salience 5))
-    ?c <- (command (action $?action) (count nil))
-    ?counter <- (command_counter (action $?action) (count ?count))
-    =>
-    (modify ?c (count (+ ?count 1)))
-    (modify ?counter (count (+ ?count 1))))
-
 ;; Eating Mushroom
-(defrule eat_mushroom_first
-    ?c <- (command (action eat mushroom) (count 1))
-    (thing  (id adventurer)
+(defrule eat_mushroom_1 "Problem #2"
+    ?c <- (command (action eat mushroom))
+    (thing (id adventurer)
             (location pit_north))
+    (not (counter (id eat mushroom)))
     =>
     (retract ?c)
+    (assert (counter (id eat mushroom) (count 1)))
     (println "You probably shouldn't do that.")
     (println "It might be poisonous."))
 
-(defrule eat_mushroom_second
-    ?c <- (command (action eat mushroom) (count 2))
-    (thing  (id adventurer)
+(defrule eat_mushroom_2 "Problem #2"
+    ?c <- (command (action eat mushroom))
+    (thing (id adventurer)
             (location pit_north))
+    ?cnt <- (counter (id eat mushroom) (count 1))
     =>
     (retract ?c)
+    (modify ?cnt (count 2))
     (println "Seriously? You have no idea what could happen!"))
 
-(defrule eat_mushroom_third
-    ?c <- (command (action eat mushroom) (count 3))
-    (thing  (id adventurer)
+(defrule eat_mushroom_3 "Problem #2"
+    ?c <- (command (action eat mushroom))
+    (thing (id adventurer)
             (location pit_north))
+    (counter (id eat mushroom) (count 2))
     =>
     (retract ?c)
-    (println "Ok, you pull a piece off and put it into your mouth.")
-    (println "Your head spins around and with a mighty step,")
-    (println "you leap out of the pit.")
+    (println "OK, you pull off a small piece and eat it. Your")
+    (println "head spins and then your body feels light. With")
+    (println "a mighty spring you leap out of the pit.")
     (halt))
 
-(defrule eat_anything
-    ?c <- (command (action eat ?) )
-    (thing  (id adventurer))
-    =>
-    (retract ?c)
-    (println "Think about escaping, not lunch!"))
+
+(defrule can't_eat "Problem #3"
+   (declare (salience -5))
+   ?c <- (command (action eat ?))
+   =>
+   (retract ?c)
+   (println "Think about escape, not lunch."))
