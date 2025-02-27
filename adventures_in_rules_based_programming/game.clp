@@ -29,7 +29,13 @@
                 "You're at the pit's south end."
                 "A large pile of rubble has"
                 "collapsed from the wall above."
-            )))
+            ))
+            
+    (thing  (id cavern)
+            (category place)
+            (description 
+                "You are in a cavern lit by glowing algae with a"
+                "well in the center. A path made of rubble lease up. ")))
 
 (deffacts scenery
     (thing  (id mushroom)
@@ -48,7 +54,13 @@
 
     (thing  (id rubble)
             (location pit_south)
-            (category scenery)))
+            (category scenery))
+            
+    (thing  (id well)
+            (location cavern)
+            (category scenery)
+            (description
+                "This is no ordinary well")))
 
 (deffacts paths
     (path   (direction south)

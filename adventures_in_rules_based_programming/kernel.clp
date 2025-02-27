@@ -111,6 +111,14 @@
     (retract ?c)
     (println ?text))
 
+(defrule bad_direction
+   (declare (salience 5))
+    ?c <- (command (action go ?dir&~north&~south&~east
+                                 &~west&~up&~down))
+    =>
+    (retract ?c)
+    (println "I don't understand the direction '" ?dir "'."))
+
 (defrule climb_action
     ?c <- (command (action climb up))
     =>
@@ -124,25 +132,36 @@
     (retract ?c)
     (println "The mushroom is not sturdy enough to climb."))
 
-;; Wand stuff
-(defrule use_wand
-    (thing  (id adventurer))
-    (thing  (id wand) (location adventurer))
-    ?c <- (command (action say abracadabra))
-    =>
-    (retract ?c)
-    (println "You are teleported out of the pit!"))
+;; Rubble
 
-(defrule search_rubble_wand
-    (thing  (id adventurer)
-            (location pit_south))
-    ?w <- (thing  (id wand)
-            (location rubble))
-    ?c <- (command (action search rubble))
-    =>
-    (retract ?c)
-    (modify ?w (location adventurer))
-    (println "You find a wand."))
+(defrule search_rubble_path_found
+   (thing (id adventurer) (location pit_south))
+   ?l <- (thing (id pit_south)
+                (description $?description))
+   (not (path (from pit_south) (to cavern)))
+   ?c <- (command (action search rubble))
+   =>
+   (println "From the top of the rubble, you can see")
+   (println "that the ground has collapsed creating")
+   (println "a path down to a cavern below.")
+   (modify ?l (description $?description 
+                           "A path through the rubble leads down"))
+   (assert (path (direction down)
+                 (from pit_south)
+                 (to cavern))
+           (path (direction up)
+                 (from cavern)
+                 (to pit_south)))
+   (retract ?c))
+
+(defrule escape
+   (thing (id adventurer) (location cavern))
+   ?c <- (command (action make wish))
+   =>
+   (retract ?c)
+   (println "Your wish is granted. You've been")
+   (println "magically transported to safety.")
+   (halt))
 
 (defrule search_rubble_empty
     (thing  (id adventurer)
