@@ -1,5 +1,2 @@
-(deffacts player
-    (thing  (id adventurer)
-            (category actor)
-            (location pit_north)))
-            
+(deffacts initial_state
+    (command (action look)))
