@@ -12,7 +12,6 @@
 (deftemplate path
   (multislot direction)
   (multislot from)
-  (slot symmetric (default FALSE))
   (slot to (default nowhere))
   (slot blocked (default FALSE))
   (slot blocked_message (default "The way is blocked.")))
