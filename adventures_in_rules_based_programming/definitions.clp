@@ -4,9 +4,15 @@
       (allowed-values place item actor scenery))
    (slot location 
       (default nowhere))
-   (multislot description))
+   (multislot description)
+   (multislot prefixes (default "")))
 
-(deftemplate command
+(deftemplate command 
+   (multislot text)
+   (multislot action))
+
+(deftemplate command_pattern
+   (multislot text)
    (multislot action))
 
 (deftemplate path

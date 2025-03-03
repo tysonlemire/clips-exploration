@@ -12,21 +12,52 @@
     (println)
     (print "> ")
     (bind ?rsp (explode$ (lowcase (readline))))
-    (assert (command (action ?rsp))))
+    (assert (command (text ?rsp))))
+
+(defrule translate
+   ?c <- (command (text $?text) (action))
+   (test (not (member$ <thing> ?text)))
+   (command_pattern (text $?text) (action $?action))
+   =>
+   (modify ?c (action ?action)))
+
+(defrule translate_one_thing_match
+   ?c <- (command (text $?before $?prefix ?id) (action))
+   (command_pattern (text $?before <thing>) (action $?action))
+   (thing (id adventurer)
+          (location ?location))
+   (thing (id ?id)
+          (prefixes $? =(implode$ ?prefix) $?)
+          (location ?location | adventurer)) 
+   (not (command_pattern (text $?before $?prefix ?id)))
+   =>
+   (modify ?c (action ?action ?id)))
+
+(defrule translate_one_thing_no_match
+   (declare (salience -5))
+   ?c <- (command (text $?before $?prefix ?id) (action))
+   (command_pattern (text $?before <thing>))
+   =>
+   (retract ?c)
+   (println "You can't see any such thing."))
+
+(defrule unrecognized_word
+    ?c <- (command (text $? ?word $?))
+    (not (command_pattern
+            (text $? ?word&~<thing> $?)))
+    (not (thing (id ?word)
+                (category scenery | item)))
+    (not (and (thing (prefixes $? ?str $?)) 
+                (test (member$ ?word (explode$ ?str)))))
+    =>
+    (retract ?c)
+    (println "I don't know the word `" ?word "`."))
 
 (defrule quit
     ?c <- (command (action quit))
     =>
     (retract ?c)
     (halt))
-
-(defrule return_command
-    (declare (salience -5))
-    ?c <- (command (action))
-    =>
-    (retract ?c)
-    (println "You can't return to the")
-    (println "safety of your home that easily."))
 
 ;; LOOK
 
@@ -78,9 +109,10 @@
 ;; MOVEMENT
 
 (defrule go_valid_path
-   ?c <- (command (action go ?direction))
    ?p <- (thing (id adventurer)
                 (location ?location))
+    (or ?c <- (command (action go ?direction))
+        ?c <- (command (action ?direction)))
    (path (direction $? ?direction $?)
          (from $? ?location $?)
          (to ?new_location)

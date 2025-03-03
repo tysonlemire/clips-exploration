@@ -1,2 +1,2 @@
 (deffacts initial_state
-    (command (action look)))
+    (command (text look)))
