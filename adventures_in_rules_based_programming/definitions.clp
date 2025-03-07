@@ -5,7 +5,10 @@
    (slot location 
       (default nowhere))
    (multislot description)
-   (multislot prefixes (default "")))
+   (multislot prefixes (default ""))
+   (multislot definite (default ""))
+   (multislot indefinite (default ""))
+   (multislot attributes))
 
 (deftemplate command 
    (multislot text)

@@ -17,31 +17,28 @@
 (deffacts places
     (thing  (id pit_north)
             (category place)
+            (definite "the pit's north end")
             (description 
-                "You're at the pit's north end."
                 "A giant mushroom is here. The"
                 "ground is littered with the"
                 "bodies of dead adventurers."))
 
     (thing  (id pit_south)
             (category place)
+            (definite "the pit's south end")
             (description 
-                "You're at the pit's south end."
                 "A large pile of rubble has"
                 "collapsed from the wall above."
-            ))
-            
-    (thing  (id cavern)
-            (category place)
-            (description 
-                "You are in a cavern lit by glowing algae with a"
-                "well in the center. A path made of rubble lease up. ")))
+            )
+            (attributes hard_ground)))
 
 (deffacts scenery
     (thing  (id mushroom)
             (location pit_north)
             (category scenery)
             (prefixes "" "the" "giant" "the giant")
+            (definite "the giant mushroom")
+            (indefinite "a giant mushroom")
             (description 
                 "It looks squished. I wouldn't"
                 "try landing on it again."))
@@ -50,6 +47,8 @@
             (location pit_north)
             (category scenery)
             (prefixes "" "the")
+            (definite "the bodies")
+            (indefinite "bodies")
             (description 
                 "Apparently this is what happens"
                 "when you miss the mushroom."))
@@ -57,13 +56,7 @@
     (thing  (id rubble)
             (location pit_south)
             (category scenery)
-            (prefixes "" "the" "pile of" "the pile of" "large pile of" "the large pile of"))
-            
-    (thing  (id well)
-            (location cavern)
-            (category scenery)
-            (description
-                "This is no ordinary well")))
+            (prefixes "" "the" "pile of" "the pile of" "large pile of" "the large pile of")))
 
 (deffacts paths
     (path   (direction south)
@@ -81,12 +74,35 @@
                 "The walls are too slick.")))
 
 (deffacts items
-    (thing  (id wand) 
-            (location rubble)))
+    (thing  (id goblin)
+            (location rubble)
+            (category item)
+            (prefixes "" "the" "dead" "the dead")
+            (indefinite "a dead goblin")
+            (definite "the dead goblin"))
+
+    (thing  (id beans)
+            (location goblin)
+            (category item)
+            (prefixes "" "the")
+            (indefinite "some beans")
+            (definite "the beans")
+            (attributes can_be_taken))
+    )
 
 (deffacts command_pattern_core
-        (command_pattern (text quit)
-                         (action quit)))
+        (command_pattern    (text quit)
+                            (action quit))
+        (command_pattern    (text get <thing>)
+                            (action take))
+        (command_pattern    (text take <thing>)
+                            (action take))
+        (command_pattern    (text grab <thing>)
+                            (action take))
+        (command_pattern    (text drop <thing>)
+                            (action drop))
+        (command_pattern    (text inventory)
+                            (action inventory)))
 
 (deffacts command_pattern_go
         (command_pattern (text south) (action go south))
@@ -110,4 +126,5 @@
         (command_pattern (text look) (action look))
         (command_pattern (text look at <thing>) (action look at))
         (command_pattern (text examine <thing>) (action look at))
+        (command_pattern (text search <thing>) (action search))
 )

@@ -67,11 +67,31 @@
             (location ?location))
     (thing  (id ?location)
             (category place)
+            (definite ?definite)
             (description $?text))
     =>
     (retract ?c)
+    (println "You're at " ?definite ".")
     (foreach ?line ?text
-        (println ?line)))
+        (println ?line))
+    (do-for-all-facts ((?t thing))
+        (and    (eq ?t:location ?location)
+                (eq ?t:category item))
+        (println "You can see " ?t:indefinite ".")))
+
+(defrule list-things
+    (list-things ?location)
+    (thing  (location location)
+            (category item)
+            (indefinite ?text))
+    =>
+    (println "You see " ?text "."))
+
+(defrule done-list-things  
+    (declare (salience -5))
+    ?lt <- (list-things $?)
+    =>
+    (retract ?lt))
 
 (defrule look_no_description
     ?c <- (command (action look at ?id))
@@ -105,7 +125,7 @@
     =>
     (retract ?c)
     (println "You can't see any such thing."))
-    
+
 ;; MOVEMENT
 
 (defrule go_valid_path
@@ -164,46 +184,113 @@
     (retract ?c)
     (println "The mushroom is not sturdy enough to climb."))
 
-;; Rubble
+;; Search
 
-(defrule search_rubble_path_found
-   (thing (id adventurer) (location pit_south))
-   ?l <- (thing (id pit_south)
-                (description $?description))
-   (not (path (from pit_south) (to cavern)))
-   ?c <- (command (action search rubble))
-   =>
-   (println "From the top of the rubble, you can see")
-   (println "that the ground has collapsed creating")
-   (println "a path down to a cavern below.")
-   (modify ?l (description $?description 
-                           "A path through the rubble leads down"))
-   (assert (path (direction down)
-                 (from pit_south)
-                 (to cavern))
-           (path (direction up)
-                 (from cavern)
-                 (to pit_south)))
-   (retract ?c))
-
-(defrule escape
-   (thing (id adventurer) (location cavern))
-   ?c <- (command (action make wish))
-   =>
-   (retract ?c)
-   (println "Your wish is granted. You've been")
-   (println "magically transported to safety.")
-   (halt))
-
-(defrule search_rubble_empty
-    (thing  (id adventurer)
-            (location pit_south))
-    ?w <- (thing  (id wand)
-            (location adventurer))
-    ?c <- (command (action search rubble))
+(defrule search_nothing_found
+    (declare (salience -5))
+    ?c <- (command (action search ?id))
     =>
     (retract ?c)
     (println "You find nothing of interest."))
+   
+
+(defrule search_rubble
+    ?c <- (command (action search rubble))
+    (thing (id adventurer)
+            (location ?location))
+    ?g <- (thing (id goblin)
+            (location rubble))
+    =>
+    (retract ?c)
+    (modify ?g (location ?location))
+    (println "You find a dead goblin.")
+    (println "he probably fell from above."))
+
+(defrule search_goblin
+    ?c <- (command (action search goblin))
+    (thing (id adventurer)
+            (location ?location))
+    ?b <- (thing (id beans)
+            (location goblin))
+    =>
+    (retract ?c)
+    (modify ?b (location ?location))
+    (println "Some beans are in his pocket."))
+
+;; manipulate things
+
+(defrule take_valid_thing
+    ?c <- (command (action take ?id))
+    ?t <- (thing    (id ?id)
+                    (attributes $? can_be_taken $?)
+                    (location ?location)
+                    (definite ?text))
+    (thing (id adventurer) (location ?location))
+    =>
+    (retract ?c)
+    (modify ?t (location adventurer))
+    (println "You take " ?text "."))
+
+(defrule take_invalid_thing
+    ?c <- (command (action take ?id))
+    ?t <- (thing    (id ?id)
+                    (attributes $?attributes)
+                    (location ?location)
+                    (definite ?text))
+    (test (not (member$ 
+                    can_be_taken ?attributes)))
+    (thing (id adventurer) (location ?location))
+    =>
+    (retract ?c)
+    (println "You can't take " ?text "."))
+
+(defrule take_carried_thing
+    ?c <- (command (action take ?id))
+    (thing  (id ?id)
+            (location adventurer)
+            (definite ?text))
+    =>
+    (retract ?c)
+    (println "You already have " ?text "."))
+
+(defrule drop_valid_thing
+    ?c <- (command (action drop ?id))
+    ?t <- (thing (id ?id)
+                 (location adventurer)
+                 (definite ?text))
+    (thing (id adventurer) (location ?location))
+    =>
+    (retract ?c)
+    (modify ?t (location ?location))
+    (println "You drop " ?text "."))
+
+(defrule drop_valid_thing
+    ?c <- (command (action drop ?id))
+    ?t <- (thing    (id ?id)
+                    (location ~adventurer)
+                    (definite ?text))
+    =>
+    (retract ?c)
+    (println "You don't have" ?text "."))
+
+(defrule inventory_empty
+    ?c <- (command (action inventory))
+    (not (thing (category item) (location adventurer)))
+    =>
+    (retract ?c)
+    (println "You are not carrying anything."))
+
+(defrule inventory_not_empty
+    ?c <- (command (action inventory))
+    (exists (thing (category item) (location adventurer)))
+    =>
+    (retract ?c)
+    (println "You are carrying:")
+    (do-for-all-facts ((?t thing))
+        (and    (eq ?t:category item)
+                (eq ?t:location adventurer))
+        (println " " ?t:indefinite)))
+
 
 ;; Eating Mushroom
 (defrule eat_mushroom_1 "Problem #2"
